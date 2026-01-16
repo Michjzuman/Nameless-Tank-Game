@@ -1,9 +1,36 @@
 const canvas = document.querySelector("canvas");
 const context = canvas.getContext("2d");
 const camera = {
-    x: window.innerWidth / 2,
-    y: window.innerHeight / 2,
+    x: 0,
+    y: 0,
+    rotation: 0,
     zoom: 1
+}
+
+function realX(x) {
+    return window.innerWidth / 2 + (
+        x
+    ) * camera.zoom - ( 
+        camera.x
+    ) * camera.zoom
+}
+
+function realY(y) {
+    return window.innerHeight / 2 + (
+        y
+    ) * camera.zoom - ( 
+        camera.y
+    ) * camera.zoom
+}
+
+function instant_camera_movement(tank) {
+    camera.x = tank.x
+    camera.y = tank.y
+}
+
+function slow_camera_movement(tank) {
+    camera.x += ((tank.x + tank.XSpeed * 10) - camera.x) / 2
+    camera.y += ((tank.y - tank.YSpeed * 10) - camera.y) / 2
 }
 
 function resizeCanvas() {
@@ -21,28 +48,25 @@ function resizeCanvas() {
     context.clearRect(0, 0, width, height);
 }
 
-function rotation(x, y, r) {
-    const offsetX = (camera.x + x) * camera.zoom
-    const offsetY = (camera.y + y) * camera.zoom
+function rotate(x, y, r) {
+    const cx = realX(x)
+    const cy = realY(y)
 
-    context.translate(
-        offsetX - (offsetX / Math.cos(r)),
-        offsetY - (offsetY / Math.sin(r))
-    );
-
-    context.rotate(r * Math.PI / 180);
+    context.translate(cx, cy)
+    context.rotate(r * Math.PI / 180)
+    context.translate(-cx, -cy)
 }
 
 function shape(points, position, closed = true) {
     context.beginPath();
 
     points.forEach((point, i) => {
-        const x = camera.x + (
+        const x = realX(
             position.x + point[0] * position.size
-        ) * camera.zoom
-        const y = camera.y + (
+        )
+        const y = realY(
             position.y + point[1] * position.size
-        ) * camera.zoom
+        )
 
         if (i == 0) {
             context.moveTo(x, y)
@@ -57,16 +81,11 @@ function shape(points, position, closed = true) {
 function normal_tank(tank) {
     context.save();
 
-    rotation(tank.x, tank.y, tank.rotation)
+    rotate(tank.x, tank.y, tank.rotation)
 
-    // ----------- ----------- -----------
-        context.fillStyle = "rgb(63, 66, 63)";
-        context.fillRect(0, 0, window.innerWidth, window.innerHeight)
-    // ----------- ----------- -----------
-
-    context.fillStyle = "rgb(82, 128, 91)";
-    context.strokeStyle = "rgb(164, 255, 180)";
-    context.lineWidth = 4;
+    context.fillStyle = tank.fillColor;
+    context.strokeStyle = tank.strokeColor;
+    context.lineWidth = 4 * camera.zoom;
 
     const w = 30
     const h = 45
@@ -95,9 +114,10 @@ function normal_tank(tank) {
     context.stroke();
 
     context.beginPath();
+
     context.arc(
-        tank.x + camera.x,
-        tank.y + camera.y,
+        realX(tank.x),
+        realY(tank.y),
         r * tank.size * camera.zoom,
         0, Math.PI * 2
     )
@@ -108,9 +128,45 @@ function normal_tank(tank) {
     context.restore();
 }
 
-function draw(tank) {
+function draw_tank(tank) {
     tank.skin(tank)
 }
 
-window.addEventListener("resize", resizeCanvas);
-resizeCanvas();
+function generate_board(w = 5, h = 5) {
+    return Array.from({ length: h - 1 }, () =>
+        Array.from({ length: w - 1 }, () =>
+            Math.round(Math.random())
+        )
+    )
+}
+
+function draw_board(board) {
+    context.save();
+
+    console.log(camera.x)
+    console.log(realX(camera.x))
+
+    rotate(
+        realX(0),
+        realY(0),
+        camera.rotation
+    )
+
+    context.fillStyle = "rgb(121, 111, 93)"
+    context.strokeStyle = "rgb(233, 246, 240)"
+    context.lineWidth = 4 * camera.zoom
+
+    const l = 150
+
+    for (let y = 0; y <= board.length; y++) {
+        for (let x = 0; x <= board[0].length; x++) {
+            context.fillRect(
+                realX(0) + x * l,
+                realY(0) + y * l,
+                l - 1, l - 1
+            )
+        }
+    }
+
+    context.restore();
+}
