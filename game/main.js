@@ -1,17 +1,21 @@
 function main() {
     const board = generate_board()
-    const tank = tank_types.master_of_time
+    const tanks = [
+        tankTypes.master_of_time
+    ]
 
     function update() {
         resizeCanvas()
 
         // Movement -----
-            move(tank)
+            move(tanks[0])
         // Camera -------
-            camera.movement.slow(tank, 30, 30)
+            camera.movement.centered(tanks[0], 50, 30)
         // Drawing ------
             draw_board(board)
-            draw_tank(tank)
+            tanks.forEach(t => {
+                draw_tank(t)
+            })
         // --------------
 
         requestAnimationFrame(update)

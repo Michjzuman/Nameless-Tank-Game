@@ -21,3 +21,10 @@ function move(tank) {
 function draw_tank(tank) {
     tank.skin(tank)
 }
+
+const mouseLockState = {
+    initialized: false,
+    target: null,
+    rotationDelta: 0,
+    sensitivity: 0.25
+}

@@ -117,35 +117,77 @@ function normal_tank(tank) {
     context.restore();
 }
 
-function generate_board(w = 5, h = 5) {
-    return Array.from({ length: 2 }, () =>
-        Array.from({ length: h - 1 }, () =>
+function generate_board(w = 6, h = 7) {
+    return [
+        Array.from({ length: h }, () =>
             Array.from({ length: w - 1 }, () =>
                 Math.round(Math.random())
             )
+        ),
+        Array.from({ length: h - 1 }, () =>
+            Array.from({ length: w }, () =>
+                Math.round(Math.random())
+            )
         )
-    )
+    ]
 }
 
 function draw_board(board) {
-    context.save();
+    context.save()
 
     rotate(realX(0), realY(0), 0)
 
     context.fillStyle = "rgb(121, 111, 93)"
-    context.strokeStyle = "rgb(233, 246, 240)"
-    context.lineWidth = 4 * camera.zoom
 
-    const l = 150
+    const l = 250
 
-    for (let y = 0; y <= board[0].length; y++) {
-        for (let x = 0; x <= board[0][0].length; x++) {
+    for (let y = 0; y < board[0].length; y++) {
+        for (let x = 0; x < board[0][0].length + 1; x++) {
             context.fillRect(
                 realX(0) + x * l * camera.zoom,
                 realY(0) + y * l * camera.zoom,
-                l * camera.zoom - 1,
-                l * camera.zoom - 1
+                l * camera.zoom,
+                l * camera.zoom
             )
+        }
+    }
+
+    context.fillStyle = "rgb(0, 0, 0)"
+    context.lineWidth = 4 * camera.zoom
+
+    const w = 20
+
+    for (let y = 0; y < board[0].length; y++) {
+        for (let x = 0; x <= board[0][0].length + 2; x++) {
+            if (
+                x == 0 ||
+                x == board[0][0].length + 1 ||
+                board[0][y][x - 1] > 0
+            ) {
+                context.fillRect(
+                    realX(0) + x * l * camera.zoom - w * camera.zoom / 2,
+                    realY(0) + y * l * camera.zoom - w * camera.zoom / 2,
+                    w * camera.zoom,
+                    (l + w) * camera.zoom
+                )
+            }
+        }
+    }
+
+    for (let y = 0; y < board[1].length + 2; y++) {
+        for (let x = 0; x < board[1][0].length; x++) {
+            if (
+                y == 0 ||
+                y == board[1][0].length + 1 ||
+                board[1][y - 1][x] > 0
+            ) {
+                context.fillRect(
+                    realX(0) + x * l * camera.zoom - w * camera.zoom / 2,
+                    realY(0) + y * l * camera.zoom - w * camera.zoom / 2,
+                    (l + w) * camera.zoom,
+                    w * camera.zoom
+                )
+            }
         }
     }
 
