@@ -13,3 +13,11 @@ window.addEventListener("keyup", (e) => {
 window.addEventListener("blur", () => {
     for (const k in keys) keys[k] = false
 })
+
+function move(tank) {
+    tank.movement(tank)
+}
+
+function draw_tank(tank) {
+    tank.skin(tank)
+}

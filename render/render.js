@@ -1,11 +1,5 @@
 const canvas = document.querySelector("canvas");
 const context = canvas.getContext("2d");
-const camera = {
-    x: 0,
-    y: 0,
-    rotation: 0,
-    zoom: 1
-}
 
 function realX(x) {
     return window.innerWidth / 2 + (
@@ -21,16 +15,6 @@ function realY(y) {
     ) * camera.zoom - ( 
         camera.y
     ) * camera.zoom
-}
-
-function instant_camera_movement(tank) {
-    camera.x = tank.x
-    camera.y = tank.y
-}
-
-function slow_camera_movement(tank) {
-    camera.x += ((tank.x + tank.XSpeed * 10) - camera.x) / 2
-    camera.y += ((tank.y - tank.YSpeed * 10) - camera.y) / 2
 }
 
 function resizeCanvas() {
@@ -49,9 +33,14 @@ function resizeCanvas() {
 }
 
 function rotate(x, y, r) {
+    const rx = window.innerWidth / 2
+    const ry = window.innerHeight / 2
+    context.translate(rx, ry)
+    context.rotate(camera.rotation * Math.PI / 180)
+    context.translate(-rx, -ry)
+
     const cx = realX(x)
     const cy = realY(y)
-
     context.translate(cx, cy)
     context.rotate(r * Math.PI / 180)
     context.translate(-cx, -cy)
@@ -128,14 +117,12 @@ function normal_tank(tank) {
     context.restore();
 }
 
-function draw_tank(tank) {
-    tank.skin(tank)
-}
-
 function generate_board(w = 5, h = 5) {
-    return Array.from({ length: h - 1 }, () =>
-        Array.from({ length: w - 1 }, () =>
-            Math.round(Math.random())
+    return Array.from({ length: 2 }, () =>
+        Array.from({ length: h - 1 }, () =>
+            Array.from({ length: w - 1 }, () =>
+                Math.round(Math.random())
+            )
         )
     )
 }
@@ -143,14 +130,7 @@ function generate_board(w = 5, h = 5) {
 function draw_board(board) {
     context.save();
 
-    console.log(camera.x)
-    console.log(realX(camera.x))
-
-    rotate(
-        realX(0),
-        realY(0),
-        camera.rotation
-    )
+    rotate(realX(0), realY(0), 0)
 
     context.fillStyle = "rgb(121, 111, 93)"
     context.strokeStyle = "rgb(233, 246, 240)"
@@ -158,12 +138,13 @@ function draw_board(board) {
 
     const l = 150
 
-    for (let y = 0; y <= board.length; y++) {
-        for (let x = 0; x <= board[0].length; x++) {
+    for (let y = 0; y <= board[0].length; y++) {
+        for (let x = 0; x <= board[0][0].length; x++) {
             context.fillRect(
-                realX(0) + x * l,
-                realY(0) + y * l,
-                l - 1, l - 1
+                realX(0) + x * l * camera.zoom,
+                realY(0) + y * l * camera.zoom,
+                l * camera.zoom - 1,
+                l * camera.zoom - 1
             )
         }
     }
